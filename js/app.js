@@ -12,7 +12,7 @@
     const amountInput = document.getElementById("amount-input");
     const expenseDiv = document.getElementById("expense-list");
     let expenseList = [];
-    const itemID = 0;
+    let itemID = 0;
 
     class UI{
       getData(){
@@ -26,6 +26,7 @@
         expenseSubmit.addEventListener('click',(event)=>{
           event.preventDefault();
           let expenseDetails={
+            id:itemID+1,
             title:expenseInput.value,
             amount:amountInput.value
           };
@@ -70,6 +71,7 @@
       setupApp(){
         let netBudget =Storage.getBudget();
         expenseList=Storage.getExpense();
+        itemID=expenseList.length;
         this.processBudget(netBudget);  
         this.populateList(expenseList);
       }
