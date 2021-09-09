@@ -11,6 +11,7 @@
     const expenseInput = document.getElementById("expense-input");
     const amountInput = document.getElementById("amount-input");
     const expenseDiv = document.getElementById("expense-list");
+    
     let expenseList = [];
     let itemID = 0;
 
@@ -21,6 +22,7 @@
           event.preventDefault();
           let netbudget=budgetInput.value;
           this.processBudget(netbudget);
+          this.calculation();
         });
         const expenseSubmit=document.getElementById('expense-submit');
         expenseSubmit.addEventListener('click',(event)=>{
@@ -33,18 +35,24 @@
           expenseList =[...expenseList,expenseDetails];
           this.displayExpenseDtails(expenseDetails);
           Storage.saveExpense(expenseList);
+          this.calculation();
+          
         })
       }
       processBudget(netbudget){
         //displaying budget
         ntbudgetAmount .innerText=netbudget;
         // display balance
-        this.displayBalance(netbudget);
+        // this.displayBalance(netbudget);
         // storing net budget 
         Storage.storeBudget(netbudget);
       }
-      displayBalance(balance){
+      displayBalance(totalExpense){
+        let netBudget=Storage.getBudget();
+        let balance=netBudget-totalExpense;
+        expenseAmount.innerText=totalExpense;
         balanceAmount.innerText=balance;
+
       }
       displayExpenseDtails(expenseDetails){
         let result='';
@@ -57,16 +65,13 @@
 
             <div class="expense-icons list-item">
 
-            <a href="#" class="edit-icon mx-2">
-              <i class="fas fa-edit"></i>
-            </a>
-            <a href="#" class="delete-icon">
-              <i class="fas fa-trash"></i>
-            </a>
+            <p class="delete-icon" data-id=${expenseDetails.id}>Remove</p>
+
             </div>
           </div>`;
           div.innerHTML=result;
           expenseDiv.appendChild(div);
+          this.listModification();
       }
       setupApp(){
         let netBudget =Storage.getBudget();
@@ -74,9 +79,38 @@
         itemID=expenseList.length;
         this.processBudget(netBudget);  
         this.populateList(expenseList);
+        this.calculation();
       }
       populateList(expenseList){
         expenseList.forEach(expenseDetails=>this.displayExpenseDtails(expenseDetails));
+      }
+      calculation(){
+        let totalExpense=0;
+        expenseList.map(item=>{
+          let amount=parseInt(item.amount);
+          totalExpense+=amount;
+       })
+       this.displayBalance(totalExpense);
+      }
+      listModification(){
+       if(expenseList.length!=0){
+        const clearList=document.querySelector('.clear-list'); 
+        const deleteIcon = document.querySelector('.delete-icon');
+        clearList.addEventListener('click',()=>{this.resetList()});
+       }
+      }
+      resetList(){
+        let itemId=expenseList.map(item=>item.id);
+        itemId.forEach(id=>this.removeItem(id));
+        while(expenseDiv.children.length >0){
+          expenseDiv.removeChild(expenseDiv.children[0]);
+        }
+      }
+      removeItem(id){
+      expenseList=expenseList.filter(item=>item.id != id);
+      this.calculation();
+      Storage.saveExpense(expenseList);
+        
       }
     }
     class Storage{
@@ -96,5 +130,6 @@
  document.addEventListener('DOMContentLoaded',()=>{
    const ui = new UI();
    ui.setupApp();
+    ui.listModification();
    ui.getData();
  });
