@@ -11,6 +11,7 @@
     const expenseInput = document.getElementById("expense-input");
     const amountInput = document.getElementById("amount-input");
     const expenseDiv = document.getElementById("expense-list");
+    const expenseContent=document.querySelector('.expense-content');
     
     let expenseList = [];
     let itemID = 0;
@@ -24,15 +25,18 @@
           this.processBudget(netbudget);
           this.calculation();
         });
+        budgetInput.value='';
         const expenseSubmit=document.getElementById('expense-submit');
         expenseSubmit.addEventListener('click',(event)=>{
           event.preventDefault();
-          itemID+=1;
+          itemID=Math.floor(Math.random() * 100);
           let expenseDetails={
             id:itemID,
             title:expenseInput.value,
             amount:amountInput.value
           };
+          expenseInput.value='';
+          amountInput.value='';
           expenseList =[...expenseList,expenseDetails];
           this.displayExpenseDtails(expenseDetails);
           Storage.saveExpense(expenseList);
@@ -58,29 +62,24 @@
       displayExpenseDtails(expenseDetails){
         let result='';
           const div=document.createElement('div');
-          div.classList.add('expense');
-          result=`<div class="expense-item d-flex justify-content-between align-items-baseline">
-
-            <h6 class="expense-title mb-0 text-uppercase list-item">${expenseDetails.title}</h6>
+          div.classList.add('expense-item');
+          result=`<h6 class="expense-title mb-0 text-uppercase list-item">${expenseDetails.title}</h6>
             <h5 class="expense-amount mb-0 list-item">${expenseDetails.amount}</h5>
 
             <div class="expense-icons list-item">
 
             <p class="delete-icon" data-id=${expenseDetails.id}>Remove</p>
-
-            </div>
-          </div>`;
+            </div>`;
           div.innerHTML=result;
-          expenseDiv.appendChild(div);
-          this.listModification();
+          expenseContent.appendChild(div);
       }
       setupApp(){
         let netBudget =Storage.getBudget();
         expenseList=Storage.getExpense();
-        itemID=expenseList.length;
         this.processBudget(netBudget);  
         this.populateList(expenseList);
         this.calculation();
+        this.listModification();
       }
       populateList(expenseList){
         expenseList.forEach(expenseDetails=>this.displayExpenseDtails(expenseDetails));
@@ -95,17 +94,26 @@
       }
       listModification(){
        if(expenseList.length!=0){
+         // clear list
         const clearList=document.querySelector('.clear-list'); 
-        const deleteIcon = document.querySelector('.delete-icon');
         clearList.addEventListener('click',()=>{this.resetList()});
+
+        //Delete option
+        expenseContent.addEventListener('click',(event)=>{
+          if(event.target.classList.contains('delete-icon')){
+          let currenItem=event.target;
+          let id=currenItem.dataset.id;
+          expenseContent.removeChild(currenItem.parentElement.parentElement);
+          this.removeItem(id);
+          }
+        });
        }
       }
       resetList(){
         let itemId=expenseList.map(item=>item.id);
         itemId.forEach(id=>this.removeItem(id));
-        while(expenseDiv.children.length >0){
-          expenseDiv.removeChild(expenseDiv.children[1]);
-          itemID = 0;
+        while(expenseContent.children.length >0){
+          expenseContent.removeChild(expenseContent.children[0]);
         }
       }
       removeItem(id){
@@ -132,6 +140,5 @@
  document.addEventListener('DOMContentLoaded',()=>{
    const ui = new UI();
    ui.setupApp();
-    ui.listModification();
    ui.getData();
  });
