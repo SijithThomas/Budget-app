@@ -27,8 +27,9 @@
         const expenseSubmit=document.getElementById('expense-submit');
         expenseSubmit.addEventListener('click',(event)=>{
           event.preventDefault();
+          itemID+=1;
           let expenseDetails={
-            id:itemID+1,
+            id:itemID,
             title:expenseInput.value,
             amount:amountInput.value
           };
@@ -103,7 +104,8 @@
         let itemId=expenseList.map(item=>item.id);
         itemId.forEach(id=>this.removeItem(id));
         while(expenseDiv.children.length >0){
-          expenseDiv.removeChild(expenseDiv.children[0]);
+          expenseDiv.removeChild(expenseDiv.children[1]);
+          itemID = 0;
         }
       }
       removeItem(id){
